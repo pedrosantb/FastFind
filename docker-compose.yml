@@ -1,0 +1,35 @@
+services:
+    fastfind:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        restart: always
+        container_name: fastfind
+        env_file:
+            - ./.env
+        volumes: 
+            - .:/app
+        expose:
+            - '8001'
+        ports:
+            - '8001:8001'
+        command: gunicorn -b 0.0.0.0:8001 -w 4 'app:create_app()'
+    fastfind_frontend:
+        build: 
+            context: ./frontend
+            dockerfile: Dockerfile
+        restart: always
+        container_name: fastfind-frontend
+        env_file:
+            - ./.env
+        volumes:
+            - "./frontend:/frontend"
+            - "/frontend/.next"
+            - "/frontend/node_modules"
+        expose:
+            - '3000'
+        ports:
+            - '3000:3000'
+        depends_on:
+            - fastfind
+        command: npm run start

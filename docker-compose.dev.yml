@@ -1,0 +1,65 @@
+services:
+    fastfind_db:
+        image: mysql:8.2.0
+        restart: always
+        container_name: fastfind-db
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        ports:
+            - '3306:3306'
+        expose:
+            - '3306'
+        volumes:
+            - fastfind_db:/var/lib/mysql
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping","-h", "localhost"]
+            timeout: 5s
+            retries: 15
+
+
+    fastfind_engine:
+        build:
+            context: ./engine
+            dockerfile: Dockerfile
+        depends_on:
+            fastfind_db:
+                condition: service_healthy
+        restart: always
+        env_file:
+            - ./.env
+        links:
+            - fastfind_db
+        container_name: fastfind-engine 
+        volumes: 
+            - .:/engine
+        expose:
+            - '5000'
+        ports:
+            - '5000:5000'
+        command: fastapi dev engine/main.py --port 5000 --host 0.0.0.0
+
+    fastfind_app:
+        build:
+            context: ./app
+            dockerfile: Dockerfile.dev
+        depends_on:
+            - fastfind_engine
+        restart: always
+        env_file:
+            - ./.env
+        container_name: fastfind-app
+        volumes:
+            - "./app:/app"
+            # - "/app/node_modules"
+        expose:
+            - '3000'
+        ports:
+            - '3000:3000'
+        command: "npm run dev"
+        
+volumes:
+    fastfind_db:
+
