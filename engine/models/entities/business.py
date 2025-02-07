@@ -17,7 +17,7 @@ class Business(BaseMixin, UserMixin, table=True):
 
     def __repr__(self) -> str:
         return (
-            f'User('
+            f'Business('
             f'id={self.id}, '
             f'email={self.email!r}, '
             f'username={self.username!r}, '
@@ -26,4 +26,4 @@ class Business(BaseMixin, UserMixin, table=True):
         )
 
     def __str__(self) -> str:
-        return f'<User {self.username}>'
+        return f'<Business {self.username}>'
